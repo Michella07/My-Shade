@@ -5,7 +5,9 @@ import { AnalysisResult } from '../types';
 import { shadeCollection } from '../data/shades';
 
 const getInitializedAI = () => {
-    const apiKey = process.env.API_KEY;
+    // For client-side apps on platforms like Vercel, env vars must be prefixed
+    // to be exposed to the browser. We'll use the common `REACT_APP_` prefix.
+    const apiKey = process.env.REACT_APP_API_KEY;
     if (!apiKey) {
         // This is a developer-facing error, caught and translated for the user in the functions below.
         throw new Error("API_KEY_NOT_CONFIGURED");
@@ -96,7 +98,7 @@ export const analyzeSkinToneFromImage = async (base64Image: string, mimeType: st
         if (error instanceof Error) {
             const errorText = error.toString();
              if (error.message === "API_KEY_NOT_CONFIGURED" || errorText.toLowerCase().includes('api key not valid')) {
-                errorMessage = "Kunci API tidak valid atau belum diatur. Silakan periksa konfigurasi.";
+                errorMessage = "Kunci API tidak valid atau belum diatur. Pastikan Anda telah mengatur environment variable 'REACT_APP_API_KEY' di Vercel.";
             } else if (errorText.includes('json') || errorText.includes('JSON')) {
                 errorMessage = "AI mengembalikan format respons yang tidak valid. Coba lagi dengan foto yang lebih terang.";
             } else if (errorText.includes('400')) {
@@ -139,7 +141,7 @@ export const getSupportResponse = async (
         if (error instanceof Error) {
             const errorText = error.toString().toLowerCase();
             if (error.message === "API_KEY_NOT_CONFIGURED" || errorText.includes('api key not valid')) {
-                errorMessage = "Terjadi masalah koneksi ke layanan AI. Mohon periksa kembali pengaturan API Key Anda di Vercel.";
+                errorMessage = "Terjadi masalah koneksi ke layanan AI. Mohon periksa kembali pengaturan 'REACT_APP_API_KEY' Anda di Vercel.";
             } else if (errorText.includes('quota')) {
                  errorMessage = "Maaf, kami sedang menerima banyak permintaan. Coba lagi nanti.";
             } else if (errorText.includes('400')) {

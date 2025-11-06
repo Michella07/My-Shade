@@ -8,7 +8,7 @@ const SplashScreen: React.FC = () => {
 
     return (
         <div
-            className="w-full h-screen flex flex-col justify-between items-center p-8 text-center bg-gradient-to-b from-rose-50 via-pink-100 to-amber-100"
+            className="w-full h-screen flex flex-col justify-between items-center p-8 text-center bg-gradient-to-b from-violet-200 via-pink-200 to-sky-200"
         >
             <div className="relative z-10 flex flex-col justify-between items-center h-full w-full">
                 <div className="text-gray-800 mt-24">
