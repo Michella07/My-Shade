@@ -1,0 +1,7 @@
+{
+  "name": "MyShade: Makeup Color Matcher",
+  "description": "An AI-powered application that analyzes your skin tone from a photo to provide personalized makeup shade recommendations.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
