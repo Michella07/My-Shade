@@ -14,7 +14,7 @@ const MatcherScreen: React.FC = () => {
                 const result = e.target?.result as string;
                 const base64Image = result.split(',')[1];
                 if (base64Image) {
-                    setCapturedImage(base64Image);
+                    setCapturedImage(base64Image, file.type);
                     navigateTo('analysis');
                 }
             };

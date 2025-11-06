@@ -70,7 +70,7 @@ const CameraView: React.FC = () => {
     const usePhoto = () => {
         if (photoDataUrl) {
             const base64Image = photoDataUrl.split(',')[1];
-            setCapturedImage(base64Image);
+            setCapturedImage(base64Image, 'image/jpeg');
             navigateTo('analysis');
         }
     };

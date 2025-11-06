@@ -14,6 +14,7 @@ interface AppContextType {
     favorites: Product[];
     analysisHistory: AnalysisResult[];
     capturedImage: string | null;
+    capturedImageMimeType: string;
     analysisResult: AnalysisResult | null;
     analysisCount: number;
     tryOnCount: number;
@@ -28,7 +29,7 @@ interface AppContextType {
     addFavorite: (product: Product) => void;
     removeFavorite: (productId: string) => void;
     isFavorite: (productId: string) => boolean;
-    setCapturedImage: (image: string | null) => void;
+    setCapturedImage: (image: string | null, mimeType?: string) => void;
     setAnalysisResult: (result: AnalysisResult | null) => void;
     addAnalysisToHistory: (result: AnalysisResult) => void;
     setSubscriptionStatus: (status: 'Gratis' | 'Pro' | 'Premium') => void;
@@ -47,7 +48,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [user, setUser] = useState<User | null>(null);
     const [favorites, setFavorites] = useState<Product[]>([]);
     const [analysisHistory, setAnalysisHistory] = useState<AnalysisResult[]>([]);
-    const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    const [capturedImage, _setCapturedImage] = useState<string | null>(null);
+    const [capturedImageMimeType, setCapturedImageMimeType] = useState('image/jpeg');
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
     const [analysisCount, setAnalysisCount] = useState(12);
     const [tryOnCount, setTryOnCount] = useState(25);
@@ -63,6 +65,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const navigateTo = (newScreen: Screen) => {
         setFromScreen(screen);
         setScreen(newScreen);
+    };
+
+    const setCapturedImage = (image: string | null, mimeType: string = 'image/jpeg') => {
+        _setCapturedImage(image);
+        if (image) {
+            setCapturedImageMimeType(mimeType);
+        }
     };
 
     const login = () => {
@@ -159,6 +168,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             favorites,
             analysisHistory,
             capturedImage,
+            capturedImageMimeType,
             analysisResult,
             analysisCount,
             tryOnCount,

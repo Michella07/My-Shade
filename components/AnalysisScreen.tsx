@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeSkinToneFromImage } from '../services/geminiService';
@@ -104,7 +105,7 @@ const AnalysisSkeleton: React.FC = () => (
 
 
 const AnalysisScreen: React.FC = () => {
-    const { capturedImage, setAnalysisResult, addAnalysisToHistory, navigateTo } = useAppContext();
+    const { capturedImage, capturedImageMimeType, setAnalysisResult, addAnalysisToHistory, navigateTo } = useAppContext();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -122,7 +123,7 @@ const AnalysisScreen: React.FC = () => {
             try {
                 // Simulate a slightly longer loading time for better UX
                 await new Promise(resolve => setTimeout(resolve, 1500));
-                const analysisData = await analyzeSkinToneFromImage(capturedImage);
+                const analysisData = await analyzeSkinToneFromImage(capturedImage, capturedImageMimeType);
                 
                 const resultWithImage: AnalysisResult = { ...analysisData, image: capturedImage };
                 
@@ -138,7 +139,7 @@ const AnalysisScreen: React.FC = () => {
 
         performAnalysis();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [capturedImage]);
+    }, [capturedImage, capturedImageMimeType]);
 
     
     return (

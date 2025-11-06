@@ -34,11 +34,11 @@ const responseSchema = {
     required: ["skinTone", "undertone", "dominantColor", "products"]
 };
 
-export const analyzeSkinToneFromImage = async (base64Image: string): Promise<Omit<AnalysisResult, 'image'>> => {
+export const analyzeSkinToneFromImage = async (base64Image: string, mimeType: string): Promise<Omit<AnalysisResult, 'image'>> => {
     try {
         const imagePart = {
             inlineData: {
-                mimeType: 'image/jpeg',
+                mimeType: mimeType,
                 data: base64Image,
             },
         };
@@ -82,22 +82,40 @@ export const analyzeSkinToneFromImage = async (base64Image: string): Promise<Omi
     } catch (error)
     {
         console.error("Error analyzing skin tone with Gemini:", error);
-        // Check for specific Gemini API errors if possible, otherwise generic message
-        if (error instanceof Error && error.message.includes('json')) {
-             throw new Error("The AI returned an invalid format. Please try again with a better lit photo.");
+
+        let errorMessage = "Gagal menganalisis gambar. Coba lagi dengan foto yang lebih jelas dan pencahayaan yang baik.";
+
+        if (error instanceof Error) {
+            const errorText = error.toString();
+            if (errorText.includes('json') || errorText.includes('JSON')) {
+                errorMessage = "AI mengembalikan format respons yang tidak valid. Coba lagi dengan foto yang lebih terang.";
+            } else if (errorText.toLowerCase().includes('api key not valid')) {
+                errorMessage = "Kunci API tidak valid atau belum diatur. Silakan periksa konfigurasi.";
+            } else if (errorText.includes('400')) {
+                errorMessage = "Gambar tidak dapat diproses. Mungkin rusak, tidak valid, atau ukurannya terlalu besar. Coba foto lain.";
+            } else if (errorText.includes('500') || errorText.includes('503')) {
+                errorMessage = "Terjadi masalah dengan layanan analisis. Silakan coba lagi nanti.";
+            }
         }
-        throw new Error("Failed to analyze image. Please try again with a clearer photo in good lighting.");
+        
+        throw new Error(errorMessage);
     }
 };
 
 export const getSupportResponse = async (
-    // FIX: The messageHistory parameter should be an array of objects to represent the conversation history.
     messageHistory: { role: 'user' | 'model', parts: { text: string }[] }[]
 ): Promise<string> => {
     try {
+        // Gemini API requires an alternating user/model conversation, starting with a 'user' message.
+        // If the first message is from the model (e.g., a welcome message), we skip it.
+        const historyForApi = [...messageHistory];
+        if (historyForApi.length > 0 && historyForApi[0].role === 'model') {
+            historyForApi.shift();
+        }
+
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: messageHistory,
+            contents: historyForApi, // Use the cleaned history
             config: {
                 systemInstruction: `You are a friendly and helpful customer support agent for "MyShade", an AI makeup recommendation app. 
                 Your name is Maya. Be concise, empathetic, and knowledgeable about the app. 
@@ -109,6 +127,20 @@ export const getSupportResponse = async (
         return response.text;
     } catch (error) {
         console.error("Error getting support response from Gemini:", error);
-        return "Maaf, sepertinya ada gangguan. Coba beberapa saat lagi ya.";
+
+        let errorMessage = "Maaf, sepertinya ada gangguan. Coba beberapa saat lagi ya.";
+        if (error instanceof Error) {
+            const errorText = error.toString().toLowerCase();
+            if (errorText.includes('api key not valid')) {
+                errorMessage = "Terjadi masalah koneksi ke layanan AI. Mohon periksa kembali pengaturan API Key Anda di Vercel.";
+            } else if (errorText.includes('quota')) {
+                 errorMessage = "Maaf, kami sedang menerima banyak permintaan. Coba lagi nanti.";
+            } else if (errorText.includes('400')) {
+                errorMessage = "Terjadi masalah dengan permintaan. Mohon coba lagi memulai percakapan baru.";
+            } else if (errorText.includes('500') || errorText.includes('503') || errorText.includes('candidate')) {
+                errorMessage = "Layanan AI sedang mengalami gangguan atau memblokir respons. Silakan coba beberapa saat lagi.";
+            }
+        }
+        return errorMessage;
     }
 };
