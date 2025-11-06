@@ -4,7 +4,14 @@ import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { AnalysisResult } from '../types';
 import { shadeCollection } from '../data/shades';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+const getInitializedAI = () => {
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+        // This is a developer-facing error, caught and translated for the user in the functions below.
+        throw new Error("API_KEY_NOT_CONFIGURED");
+    }
+    return new GoogleGenAI({ apiKey });
+};
 
 const responseSchema = {
     type: Type.OBJECT,
@@ -36,6 +43,8 @@ const responseSchema = {
 
 export const analyzeSkinToneFromImage = async (base64Image: string, mimeType: string): Promise<Omit<AnalysisResult, 'image'>> => {
     try {
+        const ai = getInitializedAI();
+        
         const imagePart = {
             inlineData: {
                 mimeType: mimeType,
@@ -72,7 +81,6 @@ export const analyzeSkinToneFromImage = async (base64Image: string, mimeType: st
         const jsonText = response.text.trim();
         const result = JSON.parse(jsonText);
         
-        // Ensure products array has at most 4 items as requested
         if (result.products && result.products.length > 4) {
           result.products = result.products.slice(0, 4);
         }
@@ -87,10 +95,10 @@ export const analyzeSkinToneFromImage = async (base64Image: string, mimeType: st
 
         if (error instanceof Error) {
             const errorText = error.toString();
-            if (errorText.includes('json') || errorText.includes('JSON')) {
-                errorMessage = "AI mengembalikan format respons yang tidak valid. Coba lagi dengan foto yang lebih terang.";
-            } else if (errorText.toLowerCase().includes('api key not valid')) {
+             if (error.message === "API_KEY_NOT_CONFIGURED" || errorText.toLowerCase().includes('api key not valid')) {
                 errorMessage = "Kunci API tidak valid atau belum diatur. Silakan periksa konfigurasi.";
+            } else if (errorText.includes('json') || errorText.includes('JSON')) {
+                errorMessage = "AI mengembalikan format respons yang tidak valid. Coba lagi dengan foto yang lebih terang.";
             } else if (errorText.includes('400')) {
                 errorMessage = "Gambar tidak dapat diproses. Mungkin rusak, tidak valid, atau ukurannya terlalu besar. Coba foto lain.";
             } else if (errorText.includes('500') || errorText.includes('503')) {
@@ -106,16 +114,15 @@ export const getSupportResponse = async (
     messageHistory: { role: 'user' | 'model', parts: { text: string }[] }[]
 ): Promise<string> => {
     try {
-        // Gemini API requires an alternating user/model conversation, starting with a 'user' message.
-        // If the first message is from the model (e.g., a welcome message), we skip it.
-        const historyForApi = [...messageHistory];
-        if (historyForApi.length > 0 && historyForApi[0].role === 'model') {
-            historyForApi.shift();
+        const ai = getInitializedAI();
+
+        if (!messageHistory || messageHistory.length === 0) {
+             throw new Error("Terjadi masalah dengan riwayat percakapan. Mohon mulai percakapan baru.");
         }
 
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: historyForApi, // Use the cleaned history
+            contents: messageHistory,
             config: {
                 systemInstruction: `You are a friendly and helpful customer support agent for "MyShade", an AI makeup recommendation app. 
                 Your name is Maya. Be concise, empathetic, and knowledgeable about the app. 
@@ -131,7 +138,7 @@ export const getSupportResponse = async (
         let errorMessage = "Maaf, sepertinya ada gangguan. Coba beberapa saat lagi ya.";
         if (error instanceof Error) {
             const errorText = error.toString().toLowerCase();
-            if (errorText.includes('api key not valid')) {
+            if (error.message === "API_KEY_NOT_CONFIGURED" || errorText.includes('api key not valid')) {
                 errorMessage = "Terjadi masalah koneksi ke layanan AI. Mohon periksa kembali pengaturan API Key Anda di Vercel.";
             } else if (errorText.includes('quota')) {
                  errorMessage = "Maaf, kami sedang menerima banyak permintaan. Coba lagi nanti.";
@@ -139,8 +146,10 @@ export const getSupportResponse = async (
                 errorMessage = "Terjadi masalah dengan permintaan. Mohon coba lagi memulai percakapan baru.";
             } else if (errorText.includes('500') || errorText.includes('503') || errorText.includes('candidate')) {
                 errorMessage = "Layanan AI sedang mengalami gangguan atau memblokir respons. Silakan coba beberapa saat lagi.";
+            } else {
+                 errorMessage = error.message;
             }
         }
-        return errorMessage;
+        throw new Error(errorMessage);
     }
 };

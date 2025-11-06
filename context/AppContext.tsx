@@ -130,12 +130,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setIsAgentTyping(true);
 
         try {
-            const history = updatedMessages.map((msg): { role: 'user' | 'model'; parts: { text: string }[] } => ({
-                role: msg.sender === 'user' ? 'user' : 'model',
-                parts: [{ text: msg.text }]
-            }));
+            const historyForApi = updatedMessages
+                .filter(msg => msg.id !== 'agent-welcome')
+                .map((msg): { role: 'user' | 'model'; parts: { text: string }[] } => ({
+                    role: msg.sender === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.text }]
+                }));
             
-            const agentResponseText = await getSupportResponse(history);
+            const agentResponseText = await getSupportResponse(historyForApi);
             
             const agentMessage: SupportMessage = {
                 id: `agent-${Date.now()}`,
@@ -147,9 +149,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             setSupportMessages(prev => [...prev, agentMessage]);
         } catch (error) {
             console.error("Error getting support response:", error);
+            const errorMessageText = error instanceof Error ? error.message : "Maaf, sepertinya ada gangguan. Coba beberapa saat lagi ya.";
             const errorMessage: SupportMessage = {
                 id: `agent-error-${Date.now()}`,
-                text: "Maaf, sepertinya ada gangguan. Coba beberapa saat lagi ya.",
+                text: errorMessageText,
                 sender: 'agent',
                 timestamp: Date.now()
             };
