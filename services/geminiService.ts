@@ -96,7 +96,7 @@ export const analyzeSkinToneFromImage = async (base64Image: string, mimeType: st
         if (error instanceof Error) {
             const errorText = error.toString();
              if (error.message === "API_KEY_NOT_CONFIGURED" || errorText.toLowerCase().includes('api key not valid')) {
-                errorMessage = "Kunci API tidak valid atau belum diatur. Silakan periksa konfigurasi Anda.";
+                errorMessage = "Kunci API tidak valid atau belum diatur. Pastikan Anda telah mengatur environment variable 'API_KEY' di Vercel.";
             } else if (errorText.includes('json') || errorText.includes('JSON')) {
                 errorMessage = "AI mengembalikan format respons yang tidak valid. Coba lagi dengan foto yang lebih terang.";
             } else if (errorText.includes('400')) {
@@ -139,7 +139,7 @@ export const getSupportResponse = async (
         if (error instanceof Error) {
             const errorText = error.toString().toLowerCase();
             if (error.message === "API_KEY_NOT_CONFIGURED" || errorText.includes('api key not valid')) {
-                errorMessage = "Terjadi masalah koneksi ke layanan AI. Mohon periksa kembali pengaturan API Key Anda.";
+                errorMessage = "Terjadi masalah koneksi ke layanan AI. Pastikan Anda telah mengatur environment variable 'API_KEY' di Vercel.";
             } else if (errorText.includes('quota')) {
                  errorMessage = "Maaf, kami sedang menerima banyak permintaan. Coba lagi nanti.";
             } else if (errorText.includes('400')) {
