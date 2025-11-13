@@ -102,7 +102,10 @@ export const analyzeSkinToneFromImage = async (base64Image: string, mimeType: st
         if (error instanceof Error) {
             const errorText = error.toString();
              if (error.message === "API_KEY_NOT_CONFIGURED" || errorText.toLowerCase().includes('api key not valid')) {
-                errorMessage = "Kunci API tidak valid atau belum diatur. Pastikan Anda telah mengatur environment variable 'API_KEY' di Vercel.";
+                // Log technical error for developer
+                console.error("GEMINI API ERROR: API Key is not configured or invalid. Please set the 'API_KEY' environment variable.");
+                // Show user-friendly message
+                errorMessage = "Layanan analisis sedang mengalami masalah teknis. Tim kami sedang menanganinya. Silakan coba lagi nanti.";
             } else if (errorText.includes('json') || errorText.includes('JSON')) {
                 errorMessage = "AI mengembalikan format respons yang tidak valid. Coba lagi dengan foto yang lebih terang.";
             } else if (errorText.includes('400')) {
@@ -145,15 +148,16 @@ export const getSupportResponse = async (
         if (error instanceof Error) {
             const errorText = error.toString().toLowerCase();
             if (error.message === "API_KEY_NOT_CONFIGURED" || errorText.includes('api key not valid')) {
-                errorMessage = "Terjadi masalah koneksi ke layanan AI. Pastikan Anda telah mengatur environment variable 'API_KEY' di Vercel.";
+                // Log technical error for developer
+                console.error("GEMINI API ERROR: API Key is not configured or invalid. Please set the 'API_KEY' environment variable.");
+                 // Show user-friendly message
+                errorMessage = "Layanan customer support sedang mengalami masalah teknis. Tim kami sedang menanganinya. Silakan coba lagi nanti.";
             } else if (errorText.includes('quota')) {
                  errorMessage = "Maaf, kami sedang menerima banyak permintaan. Coba lagi nanti.";
             } else if (errorText.includes('400')) {
                 errorMessage = "Terjadi masalah dengan permintaan. Mohon coba lagi memulai percakapan baru.";
             } else if (errorText.includes('500') || errorText.includes('503') || errorText.includes('candidate')) {
                 errorMessage = "Layanan AI sedang mengalami gangguan atau memblokir respons. Silakan coba beberapa saat lagi.";
-            } else {
-                 errorMessage = error.message;
             }
         }
         throw new Error(errorMessage);
