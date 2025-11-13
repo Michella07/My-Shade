@@ -92,6 +92,13 @@ const AnalysisSkeleton: React.FC = () => (
                     <div className="w-8 h-8 rounded-full mx-auto mt-1 bg-gray-200 animate-pulse"></div>
                 </div>
             </div>
+            <div className="mt-4 pt-4 border-t border-gray-200 animate-pulse">
+                <div className="h-5 bg-gray-200 rounded w-1/4 mb-3"></div>
+                <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                </div>
+            </div>
         </div>
         <div className="space-y-4">
             <div className="h-6 bg-gray-200 rounded w-1/2 mb-2 animate-pulse"></div>
@@ -148,7 +155,7 @@ const AnalysisScreen: React.FC = () => {
                 <button onClick={() => navigateTo('matcher')} className="p-2 rounded-full hover:bg-gray-100">
                     <ArrowLeftIcon />
                 </button>
-                <h1 className="text-xl font-bold text-gray-800 text-center flex-grow">Result</h1>
+                <h1 className="text-xl font-bold text-gray-800 text-center flex-grow">Hasil Analisis</h1>
                 <div className="w-10"></div> {/* Spacer */}
             </header>
 
@@ -166,7 +173,7 @@ const AnalysisScreen: React.FC = () => {
                 <div className="p-6">
                     <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
                         <img src={`data:image/jpeg;base64,${capturedImage}`} alt="Analyzed" className="w-full h-48 object-cover rounded-xl mb-4"/>
-                        <h2 className="text-lg font-semibold text-gray-700 mb-4">Analisis Kulit</h2>
+                        <h2 className="text-lg font-semibold text-gray-700 mb-4">Analisis Kulit Anda</h2>
                         <div className="grid grid-cols-3 gap-4 text-center">
                             <div>
                                 <p className="text-sm text-gray-500">Skin Tone</p>
@@ -180,6 +187,10 @@ const AnalysisScreen: React.FC = () => {
                                 <p className="text-sm text-gray-500">Warna Dominan</p>
                                 <div className="w-8 h-8 rounded-full mx-auto mt-1 border border-gray-200" style={{ backgroundColor: result.dominantColor }}></div>
                             </div>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                            <h3 className="font-semibold text-gray-700 mb-2">Penjelasan Hasil</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed">{result.analysisExplanation}</p>
                         </div>
                     </div>
 

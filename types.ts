@@ -24,6 +24,7 @@ export interface AnalysisResult {
   skinTone: string;
   undertone: string;
   dominantColor: string;
+  analysisExplanation: string;
   products: Product[];
 }
 

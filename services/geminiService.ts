@@ -19,6 +19,10 @@ const responseSchema = {
         skinTone: { type: Type.STRING, description: "A concise Indonesian skin tone description, e.g., 'Sawo Matang', 'Kuning Langsat'." },
         undertone: { type: Type.STRING, description: "The skin undertone in Indonesian, e.g., 'Hangat (Warm)', 'Netral (Neutral)', 'Dingin (Cool)'." },
         dominantColor: { type: Type.STRING, description: "The dominant skin color as a CSS hex code, e.g., '#C68642'." },
+        analysisExplanation: {
+            type: Type.STRING,
+            description: "A friendly, 2-3 sentence explanation in Indonesian about the skin tone and undertone results, and why these recommendations are suitable."
+        },
         products: {
             type: Type.ARRAY,
             description: "An array of 4 recommended makeup products (2 foundations, 2 lipsticks).",
@@ -38,7 +42,7 @@ const responseSchema = {
             }
         }
     },
-    required: ["skinTone", "undertone", "dominantColor", "products"]
+    required: ["skinTone", "undertone", "dominantColor", "analysisExplanation", "products"]
 };
 
 export const analyzeSkinToneFromImage = async (base64Image: string, mimeType: string): Promise<Omit<AnalysisResult, 'image'>> => {
@@ -58,7 +62,9 @@ export const analyzeSkinToneFromImage = async (base64Image: string, mimeType: st
             text: `Analyze the skin tone of the person in this image. They are from Indonesia.
             First, determine their skin tone (e.g., 'Sawo Matang'), undertone (e.g., 'Hangat (Warm)'), and the dominant skin color as a CSS hex code.
 
-            Next, from the following JSON list of available makeup products, please select the 4 most suitable items for the analyzed skin tone: 2 foundations and 2 lipsticks.
+            Second, provide a friendly, 2-3 sentence 'analysisExplanation' in Indonesian. Explain what the identified skin tone and undertone mean for choosing makeup and why the recommended product types are suitable.
+
+            Third, from the following JSON list of available makeup products, please select the 4 most suitable items for the analyzed skin tone: 2 foundations and 2 lipsticks.
 
             AVAILABLE PRODUCTS:
             ${availableProductsJson}
